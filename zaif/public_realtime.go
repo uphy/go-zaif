@@ -1,6 +1,7 @@
 package zaif
 
 import (
+	"sort"
 	"time"
 
 	"golang.org/x/net/websocket"
@@ -58,6 +59,9 @@ func (p *PublicAPI) Stream(currencyPair string, b chan<- Board, t chan<- Trade, 
 				err <- e
 			}
 			b <- *newBoard(convertBoardArray(v.Asks), convertBoardArray(v.Bids))
+			sort.Slice(v.Trades, func(i, j int) bool {
+				return v.Trades[i].Tid < v.Trades[j].Tid
+			})
 			for _, trade := range v.Trades {
 				if trade.Tid > lastTid {
 					t <- Trade{
