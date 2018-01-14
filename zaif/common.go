@@ -10,7 +10,7 @@ type (
 		Price  Price
 		Amount Amount
 	}
-	Board struct {
+	Depth struct {
 		Asks []Order
 		Bids []Order
 	}
@@ -31,11 +31,11 @@ func newOrder(price Price, amount Amount) Order {
 	return Order{price, amount}
 }
 
-func newBoard(asks []Order, bids []Order) *Board {
-	return &Board{asks, bids}
+func newDepth(asks []Order, bids []Order) *Depth {
+	return &Depth{asks, bids}
 }
 
-func convertBoardArray(a [][]float64) []Order {
+func convertDepthArray(a [][]float64) []Order {
 	var orders []Order
 	for i := 0; i < len(a); i++ {
 		orders = append(orders, newOrder(Price(a[i][0]), Amount(a[i][1])))

@@ -21,14 +21,14 @@ type (
 	}
 
 	StreamData struct {
-		Board     *Board
+		Depth     *Depth
 		LastPrice LastPrice
 		Trades    []Trade
 		Time      time.Time
 	}
 )
 
-func (p *PublicAPI) Stream(currencyPair string, b chan<- Board, t chan<- Trade, err chan<- error) {
+func (p *PublicAPI) Stream(currencyPair string, b chan<- Depth, t chan<- Trade, err chan<- error) {
 	type RawTrade struct {
 		CurrencyPair string  `json:"currency_pair"`
 		TradeType    string  `json:"trade_type"`
@@ -58,7 +58,7 @@ func (p *PublicAPI) Stream(currencyPair string, b chan<- Board, t chan<- Trade, 
 			if e := websocket.JSON.Receive(ws, &v); e != nil {
 				err <- e
 			}
-			b <- *newBoard(convertBoardArray(v.Asks), convertBoardArray(v.Bids))
+			b <- *newDepth(convertDepthArray(v.Asks), convertDepthArray(v.Bids))
 			sort.Slice(v.Trades, func(i, j int) bool {
 				return v.Trades[i].Tid < v.Trades[j].Tid
 			})

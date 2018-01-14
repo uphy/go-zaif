@@ -50,18 +50,3 @@ func (c *PrivateAPI) Trade(p *TradeParameter) (*TradeResponse, error) {
 	}
 	return &data, nil
 }
-
-func (c *PrivateAPI) Makibishi(currencyPair string, count int, increment float64) error {
-	board, err := c.publicAPI.GetBoard(currencyPair)
-	if err != nil {
-		return err
-	}
-	startPrice := board.Bids[0].Price
-	for i := 0; i < count; i++ {
-		price := startPrice + Price(increment*(float64(i)+1))
-		if _, err := c.Trade(NewTradeParameter(currencyPair, ActionBid, price, 0.1)); err != nil {
-			return err
-		}
-	}
-	return nil
-}
