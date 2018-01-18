@@ -28,7 +28,10 @@ type (
 	}
 )
 
-func (p *PublicAPI) Stream(currencyPair string, b chan<- Depth, t chan<- Trade, err chan<- error) {
+func (p *PublicAPI) Stream(currencyPair string) (<-chan Depth, <-chan Trade, <-chan error) {
+	depth := make(chan Depth, 100)
+	trade := make(chan Trade, 100)
+	err := make(chan error, 10)
 	type RawTrade struct {
 		CurrencyPair string  `json:"currency_pair"`
 		TradeType    string  `json:"trade_type"`
@@ -52,27 +55,31 @@ func (p *PublicAPI) Stream(currencyPair string, b chan<- Depth, t chan<- Trade, 
 		err <- e
 	}
 	go func() {
+		defer close(depth)
+		defer close(trade)
+		defer close(err)
 		var lastTid int64 = -1
 		for {
 			var v Data
 			if e := websocket.JSON.Receive(ws, &v); e != nil {
 				err <- e
 			}
-			b <- *newDepth(convertDepthArray(v.Asks), convertDepthArray(v.Bids))
+			depth <- *newDepth(convertDepthArray(v.Asks), convertDepthArray(v.Bids))
 			sort.Slice(v.Trades, func(i, j int) bool {
 				return v.Trades[i].Tid < v.Trades[j].Tid
 			})
-			for _, trade := range v.Trades {
-				if trade.Tid > lastTid {
-					t <- Trade{
-						Action: Action(trade.TradeType),
-						Price:  Price(trade.Price),
-						Amount: Amount(trade.Amount),
-						Time:   time.Unix(trade.Date, 0),
+			for _, t := range v.Trades {
+				if t.Tid > lastTid {
+					trade <- Trade{
+						Action: Action(t.TradeType),
+						Price:  Price(t.Price),
+						Amount: Amount(t.Amount),
+						Time:   time.Unix(t.Date, 0),
 					}
-					lastTid = trade.Tid
+					lastTid = t.Tid
 				}
 			}
 		}
 	}()
+	return depth, trade, err
 }

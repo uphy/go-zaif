@@ -8,20 +8,16 @@ import (
 
 func Stream() {
 	publicApi := zaif.NewPublicAPI()
-
-	depthChannel := make(chan zaif.Depth, 10)
-	tradeChannel := make(chan zaif.Trade, 10)
-	errorChannel := make(chan error, 10)
-	publicApi.Stream("xem_jpy", depthChannel, tradeChannel, errorChannel)
+	depth, trade, err := publicApi.Stream("xem_jpy")
 l:
 	for {
 		select {
-		case trade := <-tradeChannel:
-			fmt.Println(trade)
-		case depth := <-depthChannel:
-			fmt.Println(depth)
-		case err := <-errorChannel:
-			fmt.Println(err)
+		case t := <-trade:
+			fmt.Println(t)
+		case d := <-depth:
+			fmt.Println(d)
+		case e := <-err:
+			fmt.Println(e)
 			break l
 		}
 	}
