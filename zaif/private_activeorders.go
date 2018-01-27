@@ -21,7 +21,7 @@ func (a *ActiveOrder) Time() time.Time {
 	return time.Unix(a.Timestamp, 0)
 }
 
-func (c *PrivateAPI) ActiveOrders(currencyPair string) (*ActiveOrdersResponse, error) {
+func (c *PrivateAPI) ActiveOrders(currencyPair string) (ActiveOrdersResponse, error) {
 	params := url.Values{}
 	if len(currencyPair) > 0 {
 		params.Add("currency_pair", currencyPair)
@@ -31,5 +31,5 @@ func (c *PrivateAPI) ActiveOrders(currencyPair string) (*ActiveOrdersResponse, e
 	if err != nil {
 		return nil, err
 	}
-	return &r, nil
+	return r, nil
 }
