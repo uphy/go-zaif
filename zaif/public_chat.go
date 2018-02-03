@@ -176,9 +176,10 @@ func (c *ChatClient) Start(msg chan<- ChatMessage, err chan<- error) (<-chan Cha
 		m, e := c.receive()
 		if e != nil {
 			err <- e
-		}
-		if m.Code == ChatCodePong {
-			continue
+		} else {
+			if m.Code == ChatCodePong {
+				continue
+			}
 		}
 		switch m.Code {
 		case ChatCodeNormal:
@@ -190,8 +191,9 @@ func (c *ChatClient) Start(msg chan<- ChatMessage, err chan<- error) (<-chan Cha
 				var message ChatMessage
 				if e := c.cast(value, &message); e != nil {
 					err <- e
+				} else {
+					msg <- message
 				}
-				msg <- message
 			case "join":
 				// ignore
 			case "change":
